@@ -152,6 +152,7 @@ def download(location=None):
         js = oa['data']
         js = js.replace('function rf(a,b){','function rf(a,b){b = b.replace("tiles/mt?","tiles/mt_");')
         js = js.replace('mb("/maps/gen_204?ev=failed_tile&cad="+f)','mb("data/transparent.png")')
+        js = js.replace('document.body.style[Nk]=$(0);document.body.style[Fe]=$(8)','')
         file = open( os.path.join(RUN_FROM_DIR, 'data', 'main.js'), 'w' )
         file.write( js )
         file.close()
@@ -240,7 +241,7 @@ def download(location=None):
     html = soup.prettify()
     html = html.replace(mapfiles, 'data')
     html = html.replace('http://www.google.com/intl/en_us/mapfiles', 'data')
-    file = open( os.path.join(RUN_FROM_DIR, 'ogmaps.html'), 'w')
+    file = open( os.path.join(RUN_FROM_DIR, 'ogmap.html'), 'w')
     file.write( html )
     file.close()
     #print html
@@ -249,7 +250,7 @@ def download(location=None):
     for zl in range(17,-3,-1):
         get_map_data( get_tile_coords( lat-span_lat, lng-span_lng, zl ), get_tile_coords( lat+span_lat, lng+span_lng, zl ), zl )
     
-
+    print '\nyour offline google map is ready at:', RUN_FROM_DIR+'ogmap.html'
 
 
 
