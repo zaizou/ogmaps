@@ -79,6 +79,7 @@ def get_map_data( a, b, zl, max_span=12 ):
         y1f = (y1+y2)/2-max_span/2; y2f = (y1+y2)/2+max_span/2
     else:
         y1f, y2f = y1, y2
+        
 #    print 'x1,x2,y1,y2', x1f,x2f,y1f,y2f
     for x in range(x1f,x2f+1):
         for y in range(y1f,y2f+1):
@@ -105,14 +106,19 @@ def download(location=None):
         return
     html = oa['data']
     
-    # find our lat,lng
+    # find our loc,lat,lng
+    p = re.compile('laddr:"([^"]+)"')
+    m = p.search(html)
+    if m:
+        location = m.group(1)
+        print '\tlocation =',location
     p = re.compile('center:{lat:([0-9.-]+),lng:([0-9.-]+)}')
     m = p.search(html)
     if m:
         lat, lng = float(m.group(1)), float(m.group(2))
     else:
         lat, lng = 37.0625,-95.677068
-    print '\tlat, lng =', lat, lng
+    print '\tlatitude, longitude = %f, %f' % (lat, lng)
     
     # find our zoom level
     p = re.compile('span:{lat:([0-9.]+),lng:([0-9.]+)}')
@@ -121,12 +127,13 @@ def download(location=None):
         span_lat, span_lng = float(m.group(1)), float(m.group(2))
     else:
         span_lat, span_lng = 32, 64
-#    print 'span_lat, span_lng', span_lat, span_lng
+    print '\tspan-latitude, span-longitude = %f, %f' % (span_lat, span_lng)
     
     mapfiles = 'http://www.google.com/intl/en_us/mapfiles/94/maps2'
 
     # perform some base transformations
     html = html.replace('&#160;', '') # beautifulsoup doesn't like this char
+    html = html.replace('window.document.title = vPage.title;', 'window.document.title = "Offline Google Maps - http://code.google.com/p/ogmaps/";')
     html = html.replace('http://mt0.google.com/mt?', 'data/tiles/mt?')
     html = html.replace('http://mt1.google.com/mt?', 'data/tiles/mt?')
     html = html.replace('http://mt2.google.com/mt?', 'data/tiles/mt?')
@@ -145,6 +152,10 @@ def download(location=None):
     hide_if_found( soup.find('div', attrs={'id':'hp'}) )
     hide_if_found( soup.find('div', attrs={'id':'panel'}) )
     hide_if_found( soup.find('a', attrs={'id':'paneltoggle'}) )
+
+    o = soup.find('div', attrs={'id':'actions'})
+    if o:
+        o['style'] = 'display:none;'
 
     # get main.js and transmogrify
     if not os.path.isfile(os.path.join(RUN_FROM_DIR, 'data', 'main.js')):
@@ -244,6 +255,7 @@ def download(location=None):
     html = soup.prettify()
     html = html.replace(mapfiles, 'data')
     html = html.replace('http://www.google.com/intl/en_us/mapfiles', 'data')
+    html = html + '<style>div.contextmenu {display:none;}</style>'
     file = open( os.path.join(RUN_FROM_DIR, 'ogmap.html'), 'w')
     file.write( html )
     file.close()
