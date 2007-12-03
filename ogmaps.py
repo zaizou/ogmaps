@@ -153,6 +153,7 @@ def download(location=None):
         js = js.replace('function rf(a,b){','function rf(a,b){b = b.replace("tiles/mt?","tiles/mt_");')
         js = js.replace('mb("/maps/gen_204?ev=failed_tile&cad="+f)','mb("data/transparent.png")')
         js = js.replace('document.body.style[Nk]=$(0);document.body.style[Fe]=$(8)','')
+        js = js.replace('this.u.id="hmtctl";','this.u.id="hmtctl";this.u.style.display="none";')
         file = open( os.path.join(RUN_FROM_DIR, 'data', 'main.js'), 'w' )
         file.write( js )
         file.close()
@@ -163,6 +164,7 @@ def download(location=None):
         oa = openanything.fetch(mapfiles+'/mod_cb.js')
         js = oa['data']
         js = js.replace('/mapfiles/cb','data')
+        js = js.replace('c.id="cbcontrol";','c.id="cbcontrol";c.style.display="none;";')
         file = open( os.path.join(RUN_FROM_DIR, 'data', 'mod_cb.js'), 'w' )
         file.write( js )
         file.close()
