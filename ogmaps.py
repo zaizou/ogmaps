@@ -133,6 +133,7 @@ def download(location=None):
     html = html.replace('http://mt3.google.com/mt?', 'data/tiles/mt?')
     html = html.replace('body{margin-top: 3px;margin-bottom: 0;margin-left: 8px;}', 'body{margin:0px;}')
     html = html.replace('#map {left: 20em;margin-left: 8px;margin-right: 20em;', '#map {')
+    html = html.replace('var height = getWindowHeight() - offsetTop - 10;', 'var height = getWindowHeight() - offsetTop;')
     
     # get our kitchen
     soup = BeautifulSoup(html)
