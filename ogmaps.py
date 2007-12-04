@@ -20,6 +20,7 @@
 import math, os, re, sys, urllib
 
 RUN_FROM_DIR = os.path.abspath(os.path.dirname(sys.argv[0])) + '/'
+DEFAULT_MAX_SPAN = 12
 
 from BeautifulSoup import BeautifulSoup
 import openanything
@@ -65,7 +66,7 @@ def get_tile_coords(lat, lng, zl):
 
     return (x, y)
 
-def get_map_data( a, b, zl, max_span=12 ):
+def get_map_data( a, b, zl, max_span=DEFAULT_MAX_SPAN ):
 #    print a, b, zl
     if a[0]<b[0]: x1=a[0]; x2=b[0]
     else: x1=b[0]; x2=a[0]
@@ -87,7 +88,7 @@ def get_map_data( a, b, zl, max_span=12 ):
             filename = 'mt_n=404&v=w2.63&x=%i&y=%i&zoom=%i' % (x,y,zl)
             download_if_dne( href, os.path.join(RUN_FROM_DIR, 'data', 'tiles', filename) )
 
-def download(location=None):
+def download(location=None, max_span=DEFAULT_MAX_SPAN):
     
     # init dirs
     for dir in [ 'data', os.path.join('data','tiles') ]:
@@ -112,6 +113,10 @@ def download(location=None):
     if m:
         location = m.group(1)
         print '\tlocation =',location
+    else:
+        if location:
+            print '\tlocation not found - aborting'
+            return
     p = re.compile('center:{lat:([0-9.-]+),lng:([0-9.-]+)}')
     m = p.search(html)
     if m:
@@ -263,15 +268,26 @@ def download(location=None):
 
     # get map data
     for zl in range(17,-3,-1):
-        get_map_data( get_tile_coords( lat-span_lat, lng-span_lng, zl ), get_tile_coords( lat+span_lat, lng+span_lng, zl ), zl )
+        get_map_data( get_tile_coords( lat-span_lat, lng-span_lng, zl ), get_tile_coords( lat+span_lat, lng+span_lng, zl ), zl, max_span )
     
     print '\nyour offline google map is ready at:', RUN_FROM_DIR+'ogmap.html'
 
 
 
 if __name__ == "__main__":
+    max_span = DEFAULT_MAX_SPAN
+    locations = []
     if len(sys.argv)>1:
-        for addr in sys.argv[1:]:
-            download(addr)
+        for arg in sys.argv[1:]:
+            if arg.startswith('--'):
+                if arg.startswith('--max-span='):
+                    max_span = int(arg[11:])
+                    print 'using max_span =', max_span
+            else:
+                locations.append(arg)
+
+    if not len(locations):
+        download(None, max_span)
     else:
-        download()
+        for location in locations:
+            download(location, max_span)
